@@ -32,10 +32,11 @@ export const register: Register = on => {
     const [word, scene] = phraseFor(e.props.word)
     const line = await next(e.props.message === null ? { ...e, props: { ...e.props, word } } : e)
     // A narrow terminal keeps the whole row for the engine's line
-    if ((e.viewport?.columns ?? 80) < 50) return line
+    if ((e.viewport?.columns ?? 80) < 60) return line
 
     idleFrames = 0
     if (timer === undefined) {
+      frame = 0 // each time the spinner appears, its scene starts from the beginning
       timer = $.clock.every(FRAME_MS, () => {
         idleFrames += 1
         if (idleFrames > IDLE_FRAMES) {

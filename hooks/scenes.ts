@@ -3,71 +3,104 @@
 export type Cell = { ch: string; color: string }
 export type Scene = (frame: number) => Cell[]
 
-export const WIDTH = 12
+export const WIDTH = 25
 
 const SAND = '#d7af87'
 const WORM = '#af875f'
 const METAL = '#bcbcbc'
 const BLADE = '#eeeeee'
 const SHINE = '#ffffaf'
-const SPICE = ['#ff8700', '#00afff', '#ffaf00', '#0087ff', '#ffd700']
-const WATER = '#00afff'
+const GLOW = '#00afff'
+const MASK = '#875f00'
 const VOICE = '#af87ff'
+const BLUE = ['#0087ff', '#00afff', '#00d7ff', '#00afff']
+const SPICE = ['#ff8700', '#00afff', '#ffaf00', '#0087ff', '#ffd700']
+const DUNE = "~._.~'"
 
 const cells = (s: string, color: string): Cell[] => [...s].map(ch => ({ ch, color }))
-const fill = (row: Cell[]): Cell[] => [...row, ...cells(' '.repeat(Math.max(0, WIDTH - row.length)), SAND)]
+const blank = (n: number) => cells(' '.repeat(Math.max(0, n)), SAND)
+// center a narrow drawing in WIDTH columns
+const center = (row: Cell[]): Cell[] => {
+  const gap = WIDTH - row.length
+  return [...blank(Math.floor(gap / 2)), ...row, ...blank(Math.ceil(gap / 2))]
+}
+// blue eyes that blink now and then
+const eye = (i: number): Cell[] => [...cells('‹(', MASK), { ch: i % 20 === 0 ? '–' : '◉', color: BLUE[i % 4]! }, ...cells(')›', MASK)]
 
-const worm: Scene = i => {
-  const body = [...'╭──◉']
+// The worm, a bit longer than the line, crawls across the dunes: one full pass every 52 frames
+const crawling: Scene = i => {
+  const body = [...'( '.repeat(12) + '◉ )']
   const p = i % (WIDTH + body.length)
-  return [...'∴∵'.repeat(WIDTH)].slice(0, WIDTH).map((ch, x) => {
+  return Array.from({ length: WIDTH }, (_, x) => {
     const k = x - (p - body.length)
-    return k >= 0 && k < body.length ? { ch: body[k]!, color: WORM } : { ch, color: SAND }
+    return k >= 0 && k < body.length ? { ch: body[k]!, color: WORM } : { ch: DUNE[(x + i) % DUNE.length]!, color: SAND }
   })
 }
 
+// The ornithopter in the middle, flapping, dunes rolling under it on both sides
 const ornithopter: Scene = i => {
-  const dunes = [...'  ⌒⌒   ⌒  '.repeat(2)]
-  const off = i % 11
-  return [...cells(i % 2 ? '-=◇=-' : '>=◇=<', METAL), ...cells(' ', SAND), ...cells(dunes.slice(off, off + WIDTH - 6).join(''), SAND)]
+  const d = [...'  ⌒⌒  ⌒   ⌒⌒⌒   ⌒  ⌒⌒ ']
+  const side = (WIDTH - 7) / 2
+  const land = (from: number) => cells(Array.from({ length: side }, (_, x) => d[(x + from + i) % d.length]).join(''), SAND)
+  return [...land(0), ...blank(1), ...cells(i % 2 ? '-=◇=-' : '>=◇=<', METAL), ...blank(1), ...land(side)]
 }
 
-const spice: Scene = i => {
-  const dots = '·∙•✦'
-  const row: Cell[] = []
-  for (let x = 0; x < WIDTH; x += 2) {
+// Spice glittering orange, gold and blue across the line
+const spice: Scene = i =>
+  Array.from({ length: WIDTH }, (_, x) => {
+    if (x % 2) return { ch: ' ', color: SAND }
     const v = (i + x * 7) % 9
-    row.push({ ch: v < 4 ? dots[v]! : '·', color: SPICE[v % SPICE.length]! }, { ch: ' ', color: SAND })
-  }
-  return row
-}
+    return { ch: v < 4 ? '·∙•✦'[v]! : '·', color: SPICE[v % SPICE.length]! }
+  })
 
-// The whole blade drawn, a glint runs along it, then a pause
+// A Fremen behind the distrans mask, eyes of Ibad
+const distrans: Scene = i => center([...cells('[ ', MASK), ...eye(i), ...cells('_', MASK), ...eye(i), ...cells(' ]', MASK)])
+
+// The whole crysknife drawn; a glint runs along the blade, then a pause
 const crysknife: Scene = i => {
-  const blade = cells('══════ﺤ', BLADE)
-  const at = i % 16
+  const blade = cells('════════════ﺤ', BLADE)
+  const at = i % 20
   if (at < blade.length) blade[at] = { ch: '✦', color: SHINE }
-  return fill([...cells('▬▬ι', WORM), ...blade])
+  return center([...cells('▬▬▬▬ι', WORM), ...blade])
 }
 
-// A drop of sweat falls and climbs back, recycled by the suit
-const stillsuit: Scene = i => fill(cells(`( ${'˚·.∘○∘.·'[i % 8]} )`, WATER))
+// The Voice ripples out; centered at its widest so the eye stays still
+const voice: Scene = i => {
+  const row = [...cells('‹(', VOICE), { ch: '◉', color: BLUE[i % 4]! }, ...cells(')› ~ ' + ')'.repeat(1 + (i % 6)), VOICE)]
+  return center([...row, ...blank(14 - row.length)])
+}
 
-const voice: Scene = i => fill(cells('◉' + ' )'.repeat(i % 4), VOICE))
+// A Guild Heighliner: a light runs along the hull, the core pulses
+const heighliner: Scene = i => {
+  const hull = [...'========='] // 9 each side: 1 + 9 + 5 + 9 + 1 = 25
+  hull[i % 9] = '≡'
+  return [
+    ...cells('[' + hull.join('') + '( ', METAL),
+    { ch: '✦✧·✧'[i % 4]!, color: GLOW },
+    ...cells(' )' + [...hull].reverse().join('') + ']', METAL),
+  ]
+}
 
 export const PHRASES: ReadonlyArray<readonly [string, Scene]> = [
+  ['Riding the sandworm', crawling],
+  ['Spotting wormsign', crawling],
+  ['Summoning Shai-Hulud', crawling],
+  ['Flying the ornithopter', ornithopter],
+  ['Dwelling in the sietch', ornithopter],
   ['Harvesting spice', spice],
-  ['Riding the sandworm', worm],
-  ['Training with the Bene Gesserit', voice],
-  ['Sweating in a stillsuit', stillsuit],
-  ['Dwelling in the sietch', worm],
-  ['Drawing the crysknife', crysknife],
-  ['Spotting wormsign', worm],
   ['Dreaming of melange', spice],
   ['Entering the spice trance', spice],
-  ['Summoning Shai-Hulud', worm],
+  ['Dive into the spice', distrans],
+  ['Watching through the distrans', distrans],
+  ['Sweating in a stillsuit', distrans],
+  ['Crossing the deep desert', distrans],
+  ['Drawing the crysknife', crysknife],
+  ["Unsheathing the maker's tooth", crysknife],
   ['Using the Voice', voice],
-  ['Flying the ornithopter', ornithopter],
+  ['Training with the Bene Gesserit', voice],
+  ['Consulting the Guild Navigator', heighliner],
+  ['Guiding the Heighliner', heighliner],
+  ['Charting a safe path', heighliner],
 ]
 
 // The engine samples one word per turn, so the same word maps to the same phrase

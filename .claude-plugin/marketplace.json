@@ -1,13 +1,13 @@
 {
   "name": "hugofsp93",
   "owner": { "name": "Hugofsp93", "url": "https://github.com/Hugofsp93" },
-  "metadata": { "description": "Claude Code plugins by Hugofsp93", "version": "0.1.1" },
+  "metadata": { "description": "Claude Code plugins by Hugofsp93", "version": "0.2.0" },
   "plugins": [
     {
       "name": "dune-spinner",
       "source": "./",
       "description": "Dune spinner: a sandworm, an ornithopter, spice, a crysknife and more animate beside the spinner while Claude works",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "author": { "name": "Hugofsp93", "url": "https://github.com/Hugofsp93" },
       "homepage": "https://github.com/Hugofsp93/dune-spinner",
       "repository": "https://github.com/Hugofsp93/dune-spinner",
