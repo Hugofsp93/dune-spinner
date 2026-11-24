@@ -3,7 +3,7 @@
 export type Cell = { ch: string; color: string }
 export type Scene = (frame: number) => Cell[]
 
-export const WIDTH = 25
+export const WIDTH = 12
 
 const SAND = '#d7af87'
 const WORM = '#af875f'
@@ -27,9 +27,9 @@ const center = (row: Cell[]): Cell[] => {
 // blue eyes that blink now and then
 const eye = (i: number): Cell[] => [...cells('‹(', MASK), { ch: i % 20 === 0 ? '–' : '◉', color: BLUE[i % 4]! }, ...cells(')›', MASK)]
 
-// The worm, a bit longer than the line, crawls across the dunes: one full pass every 52 frames
+// The worm, a bit longer than the line, crawls across the dunes
 const crawling: Scene = i => {
-  const body = [...'( '.repeat(12) + '◉ )']
+  const body = [...'( '.repeat(6) + '◉ )'] // 15 cols
   const p = i % (WIDTH + body.length)
   return Array.from({ length: WIDTH }, (_, x) => {
     const k = x - (p - body.length)
@@ -40,9 +40,9 @@ const crawling: Scene = i => {
 // The ornithopter in the middle, flapping, dunes rolling under it on both sides
 const ornithopter: Scene = i => {
   const d = [...'  ⌒⌒  ⌒   ⌒⌒⌒   ⌒  ⌒⌒ ']
-  const side = (WIDTH - 7) / 2
-  const land = (from: number) => cells(Array.from({ length: side }, (_, x) => d[(x + from + i) % d.length]).join(''), SAND)
-  return [...land(0), ...blank(1), ...cells(i % 2 ? '-=◇=-' : '>=◇=<', METAL), ...blank(1), ...land(side)]
+  const left = Math.floor((WIDTH - 7) / 2)
+  const land = (from: number, n: number) => cells(Array.from({ length: n }, (_, x) => d[(x + from + i) % d.length]).join(''), SAND)
+  return [...land(0, left), ...blank(1), ...cells(i % 2 ? '-=◇=-' : '>=◇=<', METAL), ...blank(1), ...land(left, WIDTH - 7 - left)]
 }
 
 // Spice glittering orange, gold and blue across the line
@@ -53,32 +53,32 @@ const spice: Scene = i =>
     return { ch: v < 4 ? '·∙•✦'[v]! : '·', color: SPICE[v % SPICE.length]! }
   })
 
-// A Fremen behind the distrans mask, eyes of Ibad
-const distrans: Scene = i => center([...cells('[ ', MASK), ...eye(i), ...cells('_', MASK), ...eye(i), ...cells(' ]', MASK)])
+// A Fremen's eyes of Ibad above the distrans
+const distrans: Scene = i => center([...eye(i), ...cells('_', MASK), ...eye(i)])
 
 // The whole crysknife drawn; a glint runs along the blade, then a pause
 const crysknife: Scene = i => {
-  const blade = cells('════════════ﺤ', BLADE)
-  const at = i % 20
+  const blade = cells('══════ﺤ', BLADE)
+  const at = i % 13
   if (at < blade.length) blade[at] = { ch: '✦', color: SHINE }
-  return center([...cells('▬▬▬▬ι', WORM), ...blade])
+  return center([...cells('▬▬ι', WORM), ...blade])
 }
 
 // The Voice ripples out; centered at its widest so the eye stays still
 const voice: Scene = i => {
-  const row = [...cells('‹(', VOICE), { ch: '◉', color: BLUE[i % 4]! }, ...cells(')› ~ ' + ')'.repeat(1 + (i % 6)), VOICE)]
-  return center([...row, ...blank(14 - row.length)])
+  const row = [...cells('‹(', VOICE), { ch: '◉', color: BLUE[i % 4]! }, ...cells(')› ~ ' + ')'.repeat(1 + (i % 4)), VOICE)]
+  return [...row, ...blank(WIDTH - row.length)] // up to 4 waves: 12 cols
 }
 
 // A Guild Heighliner: a light runs along the hull, the core pulses
 const heighliner: Scene = i => {
-  const hull = [...'========='] // 9 each side: 1 + 9 + 5 + 9 + 1 = 25
-  hull[i % 9] = '≡'
-  return [
+  const hull = [...'=='] // 2 each side: 1 + 2 + 5 + 2 + 1 = 11
+  hull[i % 2] = '≡'
+  return center([
     ...cells('[' + hull.join('') + '( ', METAL),
     { ch: '✦✧·✧'[i % 4]!, color: GLOW },
     ...cells(' )' + [...hull].reverse().join('') + ']', METAL),
-  ]
+  ])
 }
 
 export const PHRASES: ReadonlyArray<readonly [string, Scene]> = [

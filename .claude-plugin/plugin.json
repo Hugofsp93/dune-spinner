@@ -1,7 +1,7 @@
 {
   "name": "dune-spinner",
   "displayName": "Dune Spinner",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Dune spinner: a sandworm, an ornithopter, spice, a crysknife and more animate beside the spinner while Claude works",
   "author": { "name": "Hugofsp93", "url": "https://github.com/Hugofsp93" },
   "homepage": "https://github.com/Hugofsp93/dune-spinner",

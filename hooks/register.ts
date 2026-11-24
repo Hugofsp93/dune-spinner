@@ -32,7 +32,7 @@ export const register: Register = on => {
     const [word, scene] = phraseFor(e.props.word)
     const line = await next(e.props.message === null ? { ...e, props: { ...e.props, word } } : e)
     // A narrow terminal keeps the whole row for the engine's line
-    if ((e.viewport?.columns ?? 80) < 60) return line
+    if ((e.viewport?.columns ?? 80) < 50) return line
 
     idleFrames = 0
     if (timer === undefined) {
