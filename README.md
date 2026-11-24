@@ -11,7 +11,7 @@ Dune mode for [Claude Code](https://claude.com/claude-code). While Claude works,
 ◉ ) ) )      ✻ Using the Voice…
 ```
 
-Each phrase has its scene: the sandworm crossing the dunes, the ornithopter flapping over them, spice glittering orange and blue, the crysknife sliding out of its sheath, a drop recycled by the stillsuit, and the Voice rippling out.
+Each phrase has its scene: the sandworm crossing the dunes, the ornithopter flapping over them, spice glittering orange and blue, a glint running along the crysknife, a drop recycled by the stillsuit, and the Voice rippling out.
 
 ## Install
 

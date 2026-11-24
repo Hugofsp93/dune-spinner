@@ -42,12 +42,11 @@ const spice: Scene = i => {
   return row
 }
 
-// The blade slides out of the sheath, then a glint runs along it
+// The whole blade drawn, a glint runs along it, then a pause
 const crysknife: Scene = i => {
-  const f = i % 16
-  const len = Math.min(f, 6)
-  const blade = cells('═'.repeat(len) + (f >= 6 ? 'ﺤ' : ''), BLADE)
-  if (f >= 7) blade[(f - 7) % 7] = { ch: '✦', color: SHINE }
+  const blade = cells('══════ﺤ', BLADE)
+  const at = i % 16
+  if (at < blade.length) blade[at] = { ch: '✦', color: SHINE }
   return fill([...cells('▬▬ι', WORM), ...blade])
 }
 
